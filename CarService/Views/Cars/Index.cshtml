@@ -1,0 +1,98 @@
+﻿@model CarService.Models.CarDto
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Avtomobillar ro'yhati</h1>
+<div id="app">
+    <p>
+        <a asp-action="Create">Create New</a>
+    </p>
+        <div class="row g-4 mb-1">
+            <div class="col-md">
+                <label>Minimum Narx: </label>
+                <input v-model="SearchTerms.MinPrice" placeholder="Minimum narxi" />
+            </div>
+            <div class="col-md">
+                <label class="control-label">Maximum Narx: </label>
+                <input v-model="SearchTerms.MaxPrice" placeholder="Maximum Narx" />
+            </div>
+        </div>
+        <div class="row g-3 mb-1">
+            <div class="form-group col-md">
+                <label class="control-label">Kompaniyasi: </label>
+                <select class="select" v-model="SearchTerms.Company" asp-items="ViewBag.Company">
+                    <option value="">Hammasi</option>
+                </select>
+            </div>
+            <div class="form-group col-md">
+                <label class="control-label">Modellar: </label>
+                <select class="select" v-model="SearchTerms.Model" asp-items="ViewBag.Model">
+                    <option value="" selected="selected">Hammasi</option>
+                </select>
+            </div>
+            <div class="form-group col-md">
+                <label class="control-label">Ranglar: </label>
+                <select class="select" v-model="SearchTerms.Color" asp-items="ViewBag.Color">
+                    <option value="">Hammasi</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <input type="submit" value="Search" @*v-on:click="searchByCondition"*@ class="btn btn-primary" />
+        </div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Company</th>
+                <th>Modeli</th>
+                <th>Color</th>
+                <th>Price</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr v-for="car in cars">
+                <td>{{car.company}}</td>
+                <td>{{car.model}}</td>
+                <td>{{car.color}}</td>
+                <td>{{car.price}}</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="car.id">Edit</a> |
+                    <a asp-action="Details" asp-route-id="car.id">Details</a> |
+                    <a asp-action="Delete" asp-route-id="car.id">Delete</a>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<script>
+    //let router = new VueRouter({
+    //mode: 'history',
+    //base: __dirname,
+    //routes: [
+    //    { name: 'cars', path: '/cars'}
+    //]
+    //})
+    let app = new Vue({
+        //router,
+        el: "#app",
+        data: {
+            cars: @Html.Raw(Json.Serialize(Model.Cars)),
+            SearchTerms: {
+                MinPrice: 0,
+                MaxPrice: 2147111,
+                Company: '',
+                Model: '',
+                Color: ''
+            }
+        },
+        mounted: function() {
+        },
+        //searchByCondition: function() {
+        //   this.$router.replace({ name: "cars", query: {MinPrice: SearchTerms.MinPrice,MaxPrice: SearchTerms.MaxPrice, Company: SearchTerms.Company,
+        //        Model: SearchTerms.Model, Color: SearchTerms.Color} })
+        //}
+    })  
+</script>
