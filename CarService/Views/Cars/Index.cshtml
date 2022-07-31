@@ -6,6 +6,13 @@
 
 <h1>Avtomobillar ro'yhati</h1>
 <div id="app">
+    <p>{{salom}}</p>
+    @foreach(var item in ViewData["Company"] as List<string>)
+     {
+        <input type="checkbox" id="@item" value="@item" v-model="salom">
+        <label for="@item">@item</label>
+     }
+    
     <p>
         <a asp-action="Create">Create New</a>
     </p>
@@ -21,10 +28,10 @@
         </div>
         <div class="row g-3 mb-1">
             <div class="form-group col-md">
-                <label class="control-label">Kompaniyasi: </label>
+                @*<label class="control-label">Kompaniyasi: </label>
                 <select class="select" v-model="SearchTerms.Company" asp-items="ViewBag.Company">
                     <option value="">Hammasi</option>
-                </select>
+                </select>*@
             </div>
             <div class="form-group col-md">
                 <label class="control-label">Modellar: </label>
@@ -40,7 +47,7 @@
             </div>
         </div>
         <div class="form-group">
-            <input type="submit" value="Search" @*v-on:click="searchByCondition"*@ class="btn btn-primary" />
+            <input type="submit" value="Search" v-on:click="searchByCondition" class="btn btn-primary" />
         </div>
     <table class="table">
         <thead>
@@ -75,24 +82,40 @@
     //    { name: 'cars', path: '/cars'}
     //]
     //})
-    let app = new Vue({
-        //router,
-        el: "#app",
-        data: {
-            cars: @Html.Raw(Json.Serialize(Model.Cars)),
-            SearchTerms: {
-                MinPrice: 0,
-                MaxPrice: 2147111,
-                Company: '',
-                Model: '',
-                Color: ''
+    const { createApp } = Vue
+
+    const routes = []
+
+const router = VueRouter.createRouter({
+  history: VueRouter.createWebHistory(),
+  routes, 
+})
+
+    let app = createApp({
+        data() {
+            return {
+                salom: [],
+                cars: @Html.Raw(Json.Serialize(Model.Cars)),
+                SearchTerms: {
+                    MinPrice: '',
+                    MaxPrice: '',
+                    Company: '',
+                    Model: '',
+                    Color: ''
+                }
             }
         },
         mounted: function() {
         },
-        //searchByCondition: function() {
-        //   this.$router.replace({ name: "cars", query: {MinPrice: SearchTerms.MinPrice,MaxPrice: SearchTerms.MaxPrice, Company: SearchTerms.Company,
-        //        Model: SearchTerms.Model, Color: SearchTerms.Color} })
-        //}
-    })  
+        methods: {
+            searchByCondition() {
+                let s = this.SearchTerms;
+                //router.addRoute({ path: '/cars',component: app, query: {MinPrice: s.MinPrice,MaxPrice: s.MaxPrice, Company: s.Company,
+                //    Model: s.Model, Color: s.Color} });
+                window.location.assign('https://' +window.location.hostname+(window.location.port ? (':'+window.location.port) : '') +'/cars'+ '?MinPrice='+s.MinPrice+'&MaxPrice='+s.MaxPrice+'&Company='+s.Company+
+                    '&Model='+s.Model+'&Color='+s.Color);
+            }
+        }
+    });
+    app.mount('#app');
 </script>

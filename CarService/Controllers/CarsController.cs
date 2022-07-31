@@ -53,9 +53,9 @@ namespace CarService.Controllers
         [HttpGet]
         public async Task<IActionResult> Index(CarDto carParams)
         {
-            ViewBag.Company = new SelectList((from c in cars select c.Company).Distinct());
-            ViewBag.Model = new SelectList((from c in cars select c.Model).Distinct());
-            ViewBag.Color = new SelectList((from c in cars select c.Color).Distinct());
+            ViewData["Company"] = (from c in cars select c.Company).Distinct().ToList();
+            ViewData["Model"] = (from c in cars select c.Model).Distinct().ToList();
+            ViewData["Color"] = (from c in cars select c.Color).Distinct().ToList();
 
             var sendedCars = from c in cars
                          where c.Price >= carParams.MinPrice && c.Price <= carParams.MaxPrice
