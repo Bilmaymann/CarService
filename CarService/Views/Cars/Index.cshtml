@@ -4,84 +4,114 @@
     ViewData["Title"] = "Index";
 }
 
-<h1>Avtomobillar ro'yhati</h1>
 <div id="app">
-    <p>{{salom}}</p>
-    @foreach(var item in ViewData["Company"] as List<string>)
-     {
-        <input type="checkbox" id="@item" value="@item" v-model="salom">
-        <label for="@item">@item</label>
-     }
-    
-    <p>
-        <a asp-action="Create">Create New</a>
-    </p>
-        <div class="row g-4 mb-1">
-            <div class="col-md">
-                <label>Minimum Narx: </label>
-                <input v-model="SearchTerms.MinPrice" placeholder="Minimum narxi" />
-            </div>
-            <div class="col-md">
-                <label class="control-label">Maximum Narx: </label>
-                <input v-model="SearchTerms.MaxPrice" placeholder="Maximum Narx" />
+    <div class="row">
+        <div class="col-md-3">
+            <div class="row align-items-center">
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="card-title">
+                            <h6 class="text-muted text-uppercase">Narxlar</h6>
+                        </div>
+                        <div class="card-text">
+                            <div class="g-2 mb-1">
+                                <label class="control-label">Minimum: </label>
+                                <input class="form-control" v-model="SearchTerms.MinPrice" placeholder="Minimum" />
+                            </div>
+                            <div class="col-md">
+                                <label class="control-label">Maximum: </label>
+                                <input class="form-control" v-model="SearchTerms.MaxPrice" placeholder="Maximum" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="card-title">
+                            <h6 class="text-muted text-uppercase">Kompaniyalar</h6>
+                        </div> 
+                        <div class="card-text"></div>
+                            @foreach(var item in ViewData["Company"] as List<string>)
+                            {
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="@item" value="@item" v-model="SearchTerms.Company">
+                                    <label class="form-check-label" for="@item">@item</label>
+                                </div>
+                            }
+                    </div>
+                </div>
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="card-title">
+                            <h6 class="text-muted text-uppercase">Modellar</h6>
+                        </div>
+                        <div class="card-text">
+                            @foreach(var item in ViewData["Model"] as List<string>)
+                            {
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="@item" value="@item" v-model="SearchTerms.Model">
+                                    <label class="form-check-label" for="@item">@item</label>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="card mb-3 rounded-4">
+                    <div class="card-body">
+                        <div class="card-title">
+                            <h6 class="text-muted text-uppercase">Ranglar</h6>
+                        </div>
+                        <div class="card-text">
+                            @foreach(var item in ViewData["Color"] as List<string>)
+                            {
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="@item" value="@item" v-model="SearchTerms.Color">
+                                    <label class="form-check-label" for="@item">@item</label>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <input type="submit" value="Filtr" v-on:click="searchByCondition" class="btn btn-primary w-50" />
+                </div>
             </div>
         </div>
-        <div class="row g-3 mb-1">
-            <div class="form-group col-md">
-                @*<label class="control-label">Kompaniyasi: </label>
-                <select class="select" v-model="SearchTerms.Company" asp-items="ViewBag.Company">
-                    <option value="">Hammasi</option>
-                </select>*@
+        <div class="col-md-9">
+            <div class="d-inline float-start">
+                <h2 class="d-inline">Avtomobillar ro'yhati</h2>
             </div>
-            <div class="form-group col-md">
-                <label class="control-label">Modellar: </label>
-                <select class="select" v-model="SearchTerms.Model" asp-items="ViewBag.Model">
-                    <option value="" selected="selected">Hammasi</option>
-                </select>
+            <div class="d-inline float-end">
+                    <a asp-action="Create" class="btn btn-primary">Add Car</a>
             </div>
-            <div class="form-group col-md">
-                <label class="control-label">Ranglar: </label>
-                <select class="select" v-model="SearchTerms.Color" asp-items="ViewBag.Color">
-                    <option value="">Hammasi</option>
-                </select>
-            </div>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Company</th>
+                        <th>Modeli</th>
+                        <th>Color</th>
+                        <th>Price</th>
+                        @*<th></th>*@
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="car in cars">
+                        <td>{{car.company}}</td>
+                        <td>{{car.model}}</td>
+                        <td>{{car.color}}</td>
+                        <td>{{car.price}}</td>
+                        @*<td>
+                            <a asp-action="Edit" asp-route-id="{{car.id}}">Edit</a> | 
+                            <a asp-action="Details" asp-route-id={{car.id}}>Details</a> | 
+                            <a asp-action="Delete" asp-route-id={{car.id}}>Delete</a>
+                        </td>*@
+                    </tr>
+                </tbody>
+            </table>
         </div>
-        <div class="form-group">
-            <input type="submit" value="Search" v-on:click="searchByCondition" class="btn btn-primary" />
-        </div>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Company</th>
-                <th>Modeli</th>
-                <th>Color</th>
-                <th>Price</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr v-for="car in cars">
-                <td>{{car.company}}</td>
-                <td>{{car.model}}</td>
-                <td>{{car.color}}</td>
-                <td>{{car.price}}</td>
-                <td>
-                    <a asp-action="Edit" asp-route-id="car.id">Edit</a> |
-                    <a asp-action="Details" asp-route-id="car.id">Details</a> |
-                    <a asp-action="Delete" asp-route-id="car.id">Delete</a>
-                </td>
-            </tr>
-        </tbody>
-    </table>
+    </div>
 </div>
 <script>
-    //let router = new VueRouter({
-    //mode: 'history',
-    //base: __dirname,
-    //routes: [
-    //    { name: 'cars', path: '/cars'}
-    //]
-    //})
     const { createApp } = Vue
 
     const routes = []
@@ -94,26 +124,23 @@ const router = VueRouter.createRouter({
     let app = createApp({
         data() {
             return {
-                salom: [],
                 cars: @Html.Raw(Json.Serialize(Model.Cars)),
                 SearchTerms: {
                     MinPrice: '',
                     MaxPrice: '',
-                    Company: '',
-                    Model: '',
-                    Color: ''
+                    Company: [],
+                    Model: [],
+                    Color: []
                 }
             }
         },
-        mounted: function() {
+        mounted() {
         },
         methods: {
             searchByCondition() {
                 let s = this.SearchTerms;
-                //router.addRoute({ path: '/cars',component: app, query: {MinPrice: s.MinPrice,MaxPrice: s.MaxPrice, Company: s.Company,
-                //    Model: s.Model, Color: s.Color} });
-                window.location.assign('https://' +window.location.hostname+(window.location.port ? (':'+window.location.port) : '') +'/cars'+ '?MinPrice='+s.MinPrice+'&MaxPrice='+s.MaxPrice+'&Company='+s.Company+
-                    '&Model='+s.Model+'&Color='+s.Color);
+                window.location.assign('https://' +window.location.hostname+(window.location.port ? (':'+window.location.port) : '') +'/cars'+ '?MinPrice='+s.MinPrice+'&MaxPrice='+s.MaxPrice+'&Company='+s.Company.toString()+
+                    '&Model='+s.Model.toString()+'&Color='+s.Color.toString());
             }
         }
     });

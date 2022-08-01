@@ -59,12 +59,13 @@ namespace CarService.Controllers
 
             var sendedCars = from c in cars
                          where c.Price >= carParams.MinPrice && c.Price <= carParams.MaxPrice
-                         where c.Company == carParams.Company || carParams.Company == null || carParams.Company == ""
-                         where c.Model == carParams.Model || carParams.Model == null || carParams.Model == ""
-                         where c.Color == carParams.Color || carParams.Color == null || carParams.Color == ""
+                         where carParams.Company == null || carParams.Company == "" || carParams.Company.Contains(c.Company)
+                         where carParams.Model == null || carParams.Model == "" || carParams.Model.Contains(c.Model)
+                         where carParams.Color == null || carParams.Color == "" || carParams.Color.Contains(c.Color)
                          select c;
 
-            return View(new CarDto { Cars = sendedCars.ToList()});
+            return View(new CarDto { Cars = sendedCars.ToList(),
+                Company = carParams.Company, Model = carParams.Model, Color = carParams.Color});
         }
 
         [HttpGet]
