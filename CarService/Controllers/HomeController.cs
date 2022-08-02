@@ -13,6 +13,10 @@ namespace CarService.Controllers
             _logger = logger;
         }
 
-        
+        public async Task<IActionResult> Index(CarDto carParams) =>
+            View();
+
+        public async Task<IActionResult> Privacy(CarDto carParams) =>
+            View();
     }
 }

@@ -37,7 +37,7 @@ namespace CarService.Controllers
                 Id = 4,
                 Company = "Chevrolet",
                 Model = "Neksiya",
-                Color = "ko`k",
+                Color = "Ko`k",
                 Price = 7000
             },
             new Car()
@@ -68,19 +68,6 @@ namespace CarService.Controllers
                 Company = carParams.Company, Model = carParams.Model, Color = carParams.Color});
         }
 
-        [HttpGet]
-        public async Task<CarDto> GetCars([FromRoute]CarDto carParams)
-        {
-            var sendedCars = from c in cars
-                        where c.Price >= carParams.MinPrice && c.Price <= carParams.MaxPrice
-                         where c.Company == carParams.Company || carParams.Company == null || carParams.Company == ""
-                         where c.Model == carParams.Model || carParams.Model == null || carParams.Model == ""
-                         where c.Color == carParams.Color || carParams.Color == null || carParams.Color == ""
-                         select c;
-
-            return new CarDto { Cars = sendedCars.ToList() };
-        }
-
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -99,11 +86,13 @@ namespace CarService.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([Bind("Id,Company,Model,Color,Price")] Car car)
+        public async Task<IActionResult> Create(Car car)
         {
             if (ModelState.IsValid)
             {
+                car.Id = cars.OrderByDescending(c => c.Id).Select(c => c.Id).First() + 1;
                 cars.Add(car);
+
                 return RedirectToAction(nameof(Index));
             }
             return View(car);

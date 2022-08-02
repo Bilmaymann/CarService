@@ -29,15 +29,13 @@
                     <div class="card-body">
                         <div class="card-title">
                             <h6 class="text-muted text-uppercase">Kompaniyalar</h6>
-                        </div> 
-                        <div class="card-text"></div>
-                            @foreach(var item in ViewData["Company"] as List<string>)
-                            {
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="@item" value="@item" v-model="SearchTerms.Company">
-                                    <label class="form-check-label" for="@item">@item</label>
-                                </div>
-                            }
+                        </div>
+                        <div class="card-text">
+                            <div class="form-check" v-for="comp in SearchOptions.Companies">
+                                <input class="form-check-input" type="checkbox" :id="comp" :value="comp" v-model="SearchTerms.Company">
+                                <label class="form-check-label" :for="comp">{{comp}}</label>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="card mb-3">
@@ -46,13 +44,10 @@
                             <h6 class="text-muted text-uppercase">Modellar</h6>
                         </div>
                         <div class="card-text">
-                            @foreach(var item in ViewData["Model"] as List<string>)
-                            {
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="@item" value="@item" v-model="SearchTerms.Model">
-                                    <label class="form-check-label" for="@item">@item</label>
-                                </div>
-                            }
+                            <div class="form-check" v-for="model in SearchOptions.Models">
+                                <input class="form-check-input" type="checkbox" :id="model" :value="model" v-model="SearchTerms.Model">
+                                <label class="form-check-label" :for="model">{{model}}</label>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -62,13 +57,10 @@
                             <h6 class="text-muted text-uppercase">Ranglar</h6>
                         </div>
                         <div class="card-text">
-                            @foreach(var item in ViewData["Color"] as List<string>)
-                            {
-                                <div class="form-check">
-                                    <input type="checkbox" class="form-check-input" id="@item" value="@item" v-model="SearchTerms.Color">
-                                    <label class="form-check-label" for="@item">@item</label>
-                                </div>
-                            }
+                            <div class="form-check" v-for="color in SearchOptions.Colors">
+                                <input type="checkbox" class="form-check-input" :id="color" :value="color" v-model="SearchTerms.Color">
+                                <label class="form-check-label" :for="color">{{color}}</label>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -78,71 +70,90 @@
             </div>
         </div>
         <div class="col-md-9">
-            <div class="d-inline float-start">
-                <h2 class="d-inline">Avtomobillar ro'yhati</h2>
+            <div class="float-start">
+                <h2>Avtomobillar ro'yhati</h2>
             </div>
-            <div class="d-inline float-end">
-                    <a asp-action="Create" class="btn btn-primary">Add Car</a>
+            <div class="float-end">
+                <a href="/Cars/Create" class="btn btn-primary">Add Car</a>
+            </div><br />
+            <div v-if="cars.length > 0">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Company</th>
+                            <th>Modeli</th>
+                            <th>Color</th>
+                            <th>Price</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="car in cars">
+                            <td>{{car.company}}</td>
+                            <td>{{car.model}}</td>
+                            <td>{{car.color}}</td>
+                            <td>{{car.price}}</td>
+                            <td>
+                                <div class="float-end">
+                                    <a :href="'Cars/Edit/'+car.id" class="btn btn-primary" style="width: 75px;">Edit</a>
+                                    <a :href="'Cars/Details/'+car.id" class="btn btn-info mx-lg-1 mx-md-1 mx-xxl-1 mx-xl-1" style="width: 75px;">Details</a>
+                                    <a :href="'Cars/Delete/'+car.id" class="btn btn-danger" style="width: 75px;">Delete</a>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Company</th>
-                        <th>Modeli</th>
-                        <th>Color</th>
-                        <th>Price</th>
-                        @*<th></th>*@
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="car in cars">
-                        <td>{{car.company}}</td>
-                        <td>{{car.model}}</td>
-                        <td>{{car.color}}</td>
-                        <td>{{car.price}}</td>
-                        @*<td>
-                            <a asp-action="Edit" asp-route-id="{{car.id}}">Edit</a> | 
-                            <a asp-action="Details" asp-route-id={{car.id}}>Details</a> | 
-                            <a asp-action="Delete" asp-route-id={{car.id}}>Delete</a>
-                        </td>*@
-                    </tr>
-                </tbody>
-            </table>
+            <div v-else class="float-none align-items-start">
+                <br />
+                <h4 class="text-muted mt-1">So'rovingiz bo'yicha natijalar topilmadi</h4>
+            </div>
         </div>
     </div>
 </div>
 <script>
-    const { createApp } = Vue
+        const { createApp } = Vue
 
-    const routes = []
+        const routes = []
 
-const router = VueRouter.createRouter({
-  history: VueRouter.createWebHistory(),
-  routes, 
-})
+    const router = VueRouter.createRouter({
+      history: VueRouter.createWebHistory(),
+      routes,
+    })
 
-    let app = createApp({
-        data() {
-            return {
-                cars: @Html.Raw(Json.Serialize(Model.Cars)),
-                SearchTerms: {
-                    MinPrice: '',
-                    MaxPrice: '',
-                    Company: [],
-                    Model: [],
-                    Color: []
+        let app = createApp({
+            data() {
+                return {
+                    cars: @Html.Raw(Json.Serialize(Model.Cars)),
+                    SearchTerms: {
+                        MinPrice: '',
+                        MaxPrice: '',
+                        Company: [],
+                        Model: [],
+                        Color: []
+                    },
+                    SearchOptions: {
+                        Companies: @Html.Raw(Json.Serialize(ViewData["Company"])),
+                        Models: @Html.Raw(Json.Serialize(ViewData["Model"])),
+                        Colors: @Html.Raw(Json.Serialize(ViewData["Color"]))
+                    }
+                }
+            },
+            mounted() {
+                let comps = '@(Model.Company)';
+                this.SearchTerms.Company = comps.split(",");
+                let models = '@(Model.Model)';
+                this.SearchTerms.Model = models.split(",");
+                let colors = '@(Model.Color)';
+                this.SearchTerms.Color = colors.split(",");
+            },
+            methods: {
+                searchByCondition() {
+                    let s = this.SearchTerms;
+                    window.location.assign('https://' +window.location.hostname+(window.location.port ? (':'+window.location.port) : '') +'/cars'+ '?MinPrice='+s.MinPrice+'&MaxPrice='+s.MaxPrice+'&Company='+s.Company.toString()+
+                        '&Model='+s.Model.toString()+'&Color='+s.Color.toString());
                 }
             }
-        },
-        mounted() {
-        },
-        methods: {
-            searchByCondition() {
-                let s = this.SearchTerms;
-                window.location.assign('https://' +window.location.hostname+(window.location.port ? (':'+window.location.port) : '') +'/cars'+ '?MinPrice='+s.MinPrice+'&MaxPrice='+s.MaxPrice+'&Company='+s.Company.toString()+
-                    '&Model='+s.Model.toString()+'&Color='+s.Color.toString());
-            }
-        }
-    });
-    app.mount('#app');
+        });
+        app.mount('#app');
 </script>
