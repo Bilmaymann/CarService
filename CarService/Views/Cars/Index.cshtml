@@ -111,49 +111,47 @@
         </div>
     </div>
 </div>
-<script>
-        const { createApp } = Vue
+<script type="module">
+    const { createApp } = Vue;
 
-        const routes = []
-
-    const router = VueRouter.createRouter({
-      history: VueRouter.createWebHistory(),
-      routes,
-    })
-
-        let app = createApp({
-            data() {
-                return {
-                    cars: @Html.Raw(Json.Serialize(Model.Cars)),
-                    SearchTerms: {
-                        MinPrice: '',
-                        MaxPrice: '',
-                        Company: [],
-                        Model: [],
-                        Color: []
-                    },
-                    SearchOptions: {
-                        Companies: @Html.Raw(Json.Serialize(ViewData["Company"])),
-                        Models: @Html.Raw(Json.Serialize(ViewData["Model"])),
-                        Colors: @Html.Raw(Json.Serialize(ViewData["Color"]))
-                    }
-                }
-            },
-            mounted() {
-                let comps = '@(Model.Company)';
-                this.SearchTerms.Company = comps.split(",");
-                let models = '@(Model.Model)';
-                this.SearchTerms.Model = models.split(",");
-                let colors = '@(Model.Color)';
-                this.SearchTerms.Color = colors.split(",");
-            },
-            methods: {
-                searchByCondition() {
-                    let s = this.SearchTerms;
-                    window.location.assign('https://' +window.location.hostname+(window.location.port ? (':'+window.location.port) : '') +'/cars'+ '?MinPrice='+s.MinPrice+'&MaxPrice='+s.MaxPrice+'&Company='+s.Company.toString()+
-                        '&Model='+s.Model.toString()+'&Color='+s.Color.toString());
+    let app = createApp({
+        components: {
+            MyFilter,
+        },
+        data() {
+            return {
+                cars: @Html.Raw(Json.Serialize(Model.Cars)),
+                SearchTerms: {
+                    MinPrice: '',
+                    MaxPrice: '',
+                    Company: [],
+                    Model: [],
+                    Color: []
+                },
+                SearchOptions: {
+                    Companies: @Html.Raw(Json.Serialize(ViewData["Company"])),
+                    Models: @Html.Raw(Json.Serialize(ViewData["Model"])),
+                    Colors: @Html.Raw(Json.Serialize(ViewData["Color"]))
                 }
             }
-        });
-        app.mount('#app');
+        },
+        mounted() {
+            let comps = '@(Model.Company)';
+            this.SearchTerms.Company = comps.split(",");
+            let models = '@(Model.Model)';
+            this.SearchTerms.Model = models.split(",");
+            let colors = '@(Model.Color)';
+            this.SearchTerms.Color = colors.split(",");
+        },
+        methods: {
+            async searchByCondition() {
+                let s = this.SearchTerms;
+                let url = 'https://' +window.location.hostname+(window.location.port ? (':'+window.location.port) : '') +'/api/cars'+ '?MinPrice='+s.MinPrice+'&MaxPrice='+s.MaxPrice+'&Company='+s.Company.toString()+
+                        '&Model='+s.Model.toString()+'&Color='+s.Color.toString();
+                const res = await fetch(url);
+                this.cars = await res.json();
+            }
+        }
+    });
+    app.mount('#app');
 </script>

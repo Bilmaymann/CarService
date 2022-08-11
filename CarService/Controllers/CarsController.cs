@@ -1,58 +1,39 @@
-﻿using CarService.Models;
+﻿using CarService.Data;
+using CarService.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 
 namespace CarService.Controllers
 {
     public class CarsController : Controller
     {
-        public static List<Car> cars = new List<Car>()
+        private readonly ApplicationDbContext _context;
+        public CarsController(ApplicationDbContext context)
         {
-            new Car()
-            {
-                Id = 1,
-                Company = "Chevrolet",
-                Model = "Cobalt",
-                Color = "Oq",
-                Price = 10000
-            },
-            new Car()
-            {
-                Id = 2,
-                Company = "Chevrolet",
-                Model = "Malibu",
-                Color = "Qora",
-                Price = 30000
-            },
-            new Car()
-            {
-                Id = 3,
-                Company = "Chevrolet",
-                Model = "Matiz",
-                Color = "Qizil",
-                Price = 5000
-    },
-            new Car()
-            {
-                Id = 4,
-                Company = "Chevrolet",
-                Model = "Neksiya",
-                Color = "Ko`k",
-                Price = 7000
-            },
-            new Car()
-            {
-                Id = 5,
-                Company = "Chevrolet",
-                Model = "Damas",
-                Color = "Oq",
-                Price = 10000
-            },
-        };
-                
+            _context = context;
+        }
+
+        [HttpGet]
+        [Route("api/cars")]
+        public async Task<IActionResult> GetAllCars([FromQuery]CarDto carParams)
+        {
+            Console.WriteLine(carParams.MinPrice);
+            var cars = await _context.Cars.ToListAsync();
+            var sendedCars = from c in cars
+                             where c.Price >= carParams.MinPrice && (c.Price <= carParams.MaxPrice || carParams.MaxPrice == 0)
+                             where carParams.Company == null || carParams.Company == "" || carParams.Company.Contains(c.Company)
+                             where carParams.Model == null || carParams.Model == "" || carParams.Model.Contains(c.Model)
+                             where carParams.Color == null || carParams.Color == "" || carParams.Color.Contains(c.Color)
+                             select c;
+            return Ok(sendedCars);
+        }
+
         [HttpGet]
         public async Task<IActionResult> Index(CarDto carParams)
         {
+            var cars = await _context.Cars.ToListAsync();
+
             ViewData["Company"] = (from c in cars select c.Company).Distinct().ToList();
             ViewData["Model"] = (from c in cars select c.Model).Distinct().ToList();
             ViewData["Color"] = (from c in cars select c.Color).Distinct().ToList();
@@ -73,7 +54,7 @@ namespace CarService.Controllers
             if (id == null)
                 return NotFound();
 
-            var car = cars.FirstOrDefault(c => c.Id == id);
+            var car = await _context.Cars.FirstOrDefaultAsync(c => c.Id == id);
             if (car == null)
                 return NotFound();
 
@@ -90,8 +71,8 @@ namespace CarService.Controllers
         {
             if (ModelState.IsValid)
             {
-                car.Id = cars.OrderByDescending(c => c.Id).Select(c => c.Id).First() + 1;
-                cars.Add(car);
+                await _context.Cars.AddAsync(car);
+                await _context.SaveChangesAsync();
 
                 return RedirectToAction(nameof(Index));
             }
@@ -103,7 +84,7 @@ namespace CarService.Controllers
             if (id == null)
                 return NotFound();
 
-            var car = cars.Find(c => c.Id == id);
+            var car = await _context.Cars.FindAsync(id);
             if (car == null)
                 return NotFound();
 
@@ -118,10 +99,18 @@ namespace CarService.Controllers
 
             if (ModelState.IsValid)
             {
-                var carr = cars.Find(c => c.Id == id);
-                cars.Remove(carr);
-                cars.Add(car);
-
+                try
+                {
+                    _context.Update(car);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!CarExists(car.Id))
+                        return NotFound();
+                    else
+                        throw;
+                }
                 return RedirectToAction(nameof(Index));
             }
 
@@ -133,25 +122,27 @@ namespace CarService.Controllers
             if (id == null)
                 return NotFound();
 
-            var car = cars.FirstOrDefault(m => m.Id == id);
+            var car = await _context.Cars.FirstOrDefaultAsync(m => m.Id == id);
             if (car == null)
                 return NotFound();
 
             return View(car);
+
         }
 
         [HttpPost, ActionName("Delete")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var car = cars.Find(c => c.Id == id);
-            cars.Remove(car);
+            var car = await _context.Cars.FindAsync(id);
+            _context.Cars.Remove(car);
+            await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
         }
 
-        private bool carExists(int id)
+        private bool CarExists(int id)
         {
-            return cars.Any(e => e.Id == id);
+            return _context.Cars.Any(e => e.Id == id);
         }
     }
 }
