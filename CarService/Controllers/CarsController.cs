@@ -1,42 +1,50 @@
 ﻿using CarService.Data;
+using CarService.Dtos.RequestFeatures;
 using CarService.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using CarService.Extentions;
+using CarService.Repositories.Interfaces;
 
 namespace CarService.Controllers
 {
+    
     public class CarsController : Controller
     {
         private readonly ApplicationDbContext _context;
-        public CarsController(ApplicationDbContext context)
+        private readonly ICarRepository _repository;
+        public CarsController(ApplicationDbContext context, ICarRepository repository)
         {
             _context = context;
+            _repository = repository;
+        }
+
+        [Route("api/car")]
+        [HttpGet]
+        public async Task<IActionResult> GetAllCars([FromQuery] CarParameters carParams)
+        { 
+            var cars = await _repository.GetAllAsync(carParams);
+            var companies = await _repository.GetCompaniesAsync();
+            var models = await _repository.GetModelsAsync();
+            var colors = await _repository.GetColorsAsync();
+
+            return Ok(new CarDto
+            {
+                Cars = cars,
+                Company = companies,
+                Model = models,
+                Color = colors
+            });
         }
 
         [HttpGet]
-        [Route("api/cars")]
-        public async Task<IActionResult> GetAllCars([FromQuery]CarDto carParams)
-        {
-            Console.WriteLine(carParams.MinPrice);
-            var cars = await _context.Cars.ToListAsync();
-            var sendedCars = from c in cars
-                             where c.Price >= carParams.MinPrice && (c.Price <= carParams.MaxPrice || carParams.MaxPrice == 0)
-                             where carParams.Company == null || carParams.Company == "" || carParams.Company.Contains(c.Company)
-                             where carParams.Model == null || carParams.Model == "" || carParams.Model.Contains(c.Model)
-                             where carParams.Color == null || carParams.Color == "" || carParams.Color.Contains(c.Color)
-                             select c;
-            return Ok(sendedCars);
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> Index(CarDto carParams)
+        public async Task<IActionResult> Index(CarParameters carParams)
         {
             var cars = await _context.Cars.ToListAsync();
 
-            ViewData["Company"] = (from c in cars select c.Company).Distinct().ToList();
-            ViewData["Model"] = (from c in cars select c.Model).Distinct().ToList();
-            ViewData["Color"] = (from c in cars select c.Color).Distinct().ToList();
+            var carCompanies = (from c in cars select c.Company).Distinct().ToList();
+            var carModels = (from c in cars select c.Model).Distinct().ToList();
+            var carColors = (from c in cars select c.Color).Distinct().ToList();
 
             var sendedCars = from c in cars
                          where c.Price >= carParams.MinPrice && c.Price <= carParams.MaxPrice
@@ -46,7 +54,9 @@ namespace CarService.Controllers
                          select c;
 
             return View(new CarDto { Cars = sendedCars.ToList(),
-                Company = carParams.Company, Model = carParams.Model, Color = carParams.Color});
+                Company = String.Join(",", carCompanies), Model = String.Join(",", carModels), 
+                Color = String.Join(",", carColors)
+            });
         }
 
         public async Task<IActionResult> Details(int? id)
